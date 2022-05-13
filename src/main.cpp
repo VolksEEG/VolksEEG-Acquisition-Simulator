@@ -191,11 +191,7 @@ void loop()
   {
     unsigned long long nowMicros = GetCorrectedMicros();
     InvertPin(GENERAL_TEST_PIN_1);
-    //~Serial1.println(nowMicros);
-    //~Serial1.print(", ");
-    //~Serial1.println(nextMicros);
-    //delay(1);
-    if (nowMicros > nextMicros) //at some point, this never returns true
+    if (nowMicros > nextMicros) 
     {
       if (GPIO_DEBUG)
       {
@@ -208,8 +204,6 @@ void loop()
         digitalWrite(GENERAL_TEST_PIN_2, LOW);
       }
       unsigned long nowSecs = nowMicros / 1000000;
-      Serial1.print(", ");
-      Serial1.println(nowSecs);
     }
   }
   else
@@ -240,14 +234,10 @@ unsigned long long GetCorrectedMicros()
   }
   else
   {
-    //~Serial1.println(currentRawMicros);
-    //break me up
     unsigned long long adjustedRaw = currentRawMicros + pow(2,26);
     unsigned long long delta = adjustedRaw - previousRawMicros;
     adjustedRaw = adjustedRaw % (unsigned long long)pow(2,26);
     adjustedRaw = currentRawMicros;
-    //~Serial1.println(delta);
-    //accumulatedMicros += (previousAccumulatedMicros + delta); 
   }
   previousRawMicros = currentRawMicros;
   previousAccumulatedMicros = accumulatedMicros;
@@ -277,7 +267,7 @@ void WriteNextPacket()
   }
   OutPacket outPacket;
   unsigned long rowInBuffer = numPacketsWritten % numOutArrayRows;
-  outPacket.counter = numPacketsWritten % (2^15);
+  outPacket.counter = numPacketsWritten % 32768; //32769 = 2e15;
   for (int chan = 0; chan < numChans; chan++)
   {
     if (chan < 8)
@@ -285,10 +275,10 @@ void WriteNextPacket()
       int32_t digitalOut = outArray[chan][rowInBuffer];
       float physOut = (digitalOut * chanAttr[chan].calMultiplier) + chanAttr[chan].calOffset;
       outPacket.values[chan] = (int32_t)physOut;
-      if (chan == 4)
-      {
-        Serial1.print(physOut);
-      }
+//      if (chan == 4)
+//      {
+//        Serial1.print(physOut);
+//      }
     }
   }
   SendOutPacket(&outPacket); 
